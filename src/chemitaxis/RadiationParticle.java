@@ -15,44 +15,60 @@
 
 package chemitaxis;
 
+import sim.util.Bag;
+import sim.util.Double2D;
 import sim.util.gui.SimpleColorMap;
 
 import java.awt.*;
+import java.util.Iterator;
 
 /**
  * Created by cbadenes on 05/12/14.
  */
 public class RadiationParticle extends Particle {
 
-    private double intensity = 2.0;
-
     final SimpleColorMap map = new SimpleColorMap(
-            200,
-            1000,
-            Color.red,
-            Color.green);
+            0,
+            sim.getRadiationIntensity(),
+            Color.green,
+            Color.red);
 
     protected RadiationParticle(ChemitaxisSim sim, int id) {
         super(
-//                (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
-//                (sim.random.nextDouble() * sim.height) - (sim.height * 0.5),
-                0,
-                0,
+                sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
+                sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
                 0,
                 0,
                 sim,
-                id
+                id,
+                sim.getRadiationIntensity()
         );
     }
 
     @Override
     public Color getColor() {
-        return map.getColor(intensity);
+        return map.getColor(intensity < 0? 0 : intensity);
     }
 
     @Override
-    public void stepUpdateIntensity() {
+    public void stepUpdateVelocity(){
 
+    }
+
+    @Override
+    public void stepUpdateRadiation() {
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
+
+        int insulatingLevel = 0;
+        Iterator iterator = neighbors.iterator();
+        while(iterator.hasNext()){
+            Particle particle = (Particle) iterator.next();
+            if (particle instanceof InsulationParticle){
+                insulatingLevel += ((InsulationParticle) particle).intensity;
+            }
+        }
+        
+        intensity = sim.getRadiationIntensity() - insulatingLevel;
     }
 
 }

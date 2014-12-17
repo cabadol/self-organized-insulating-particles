@@ -76,9 +76,6 @@ public class ChemitaxisSimWithUI extends GUIState {
         displayFrame.setTitle("Chemitaxis-based Self-Organization");
         c.registerFrame(displayFrame);
         displayFrame.setVisible(true);
-//        display.attach(swarmPortrayal, "Behold the Swarm!",
-//                (display.insideDisplay.width * 0.5),
-//                (display.insideDisplay.height * 0.5), true);
         display.attach(swarmPortrayal, "Behold the Swarm!",
                 0.0,
                 0.0,

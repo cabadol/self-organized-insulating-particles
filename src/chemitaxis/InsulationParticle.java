@@ -24,22 +24,22 @@ import java.awt.*;
  */
 public class InsulationParticle extends Particle {
 
-    private double intensity = 2.0;
-
     final SimpleColorMap map = new SimpleColorMap(
-            200,
-            1000,
-            Color.blue,
-            Color.white);
+            0,
+            sim.getInsulatingIntensity(),
+            Color.white,
+            Color.blue);
 
     protected InsulationParticle(ChemitaxisSim sim, int id) {
         super(
-                (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
-                (sim.random.nextDouble() * sim.height) - (sim.height * 0.5),
-                (sim.random.nextDouble() * sim.getMaxVelocity()) - (sim.getMaxVelocity() * 0.5),
-                (sim.random.nextDouble() * sim.getMaxVelocity()) - (sim.getMaxVelocity() * 0.5),
+                sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
+                sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
+                (sim.random.nextDouble() % sim.getMaxVelocity()),
+                (sim.random.nextDouble() % sim.
+                        getMaxVelocity()),
                 sim,
-                id
+                id,
+                sim.getInsulatingIntensity()
         );
     }
 
@@ -49,7 +49,7 @@ public class InsulationParticle extends Particle {
     }
 
     @Override
-    public void stepUpdateIntensity() {
+    public void stepUpdateRadiation() {
 
     }
 

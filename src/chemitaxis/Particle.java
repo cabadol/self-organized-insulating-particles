@@ -23,37 +23,25 @@ import sim.util.MutableDouble2D;
  */
 public abstract class Particle {
 
-    private MutableDouble2D position = new MutableDouble2D();
-    private MutableDouble2D velocity = new MutableDouble2D();
+    protected MutableDouble2D position = new MutableDouble2D();
+    protected MutableDouble2D velocity = new MutableDouble2D();
 
-    private int id;
-    private ChemitaxisSim sim;
+    protected int id;
+    protected ChemitaxisSim sim;
+    protected int intensity;
 
-    private double maxWidth;
-    private double maxHeight;
-    protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, int id) {
+    protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, int id, int intensity) {
         this.id = id;
         this.sim = sim;
-
-        this.maxWidth   = sim.space.getWidth() / 2;
-        this.maxHeight  = sim.space.getHeight() / 2;
         this.position.setTo(x, y);
         this.velocity.setTo(vx, vy);
-
+        this.intensity = intensity;
         sim.space.setObjectLocation(this,new Double2D(position));
     }
 
     public abstract java.awt.Color getColor();
 
-    public abstract void stepUpdateIntensity();
-
-    public MutableDouble2D getPosition() {
-        return position;
-    }
-
-    public MutableDouble2D getVelocity() {
-        return velocity;
-    }
+    public abstract void stepUpdateRadiation();
 
     public void stepUpdateVelocity(){
         double x = position.x;

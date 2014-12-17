@@ -33,9 +33,23 @@ public class ChemitaxisSim extends SimState {
     private RadiationParticle[] radiationParticles;
     private InsulationParticle[] insulationParticles;
 
-    private int numRadioctiveParticles = 1;
-    private int numInsulationParticles = 1;
+    private int numRadioctiveParticles = 5;
+    private int numInsulationParticles = 20;
+
+    private int radiationIntensity = 2;
+    private double radiationRadius = 0.5;
+
+    private int insulatingIntensity = 1;
+
     private double maxVelocity = 1.0;
+
+    public double getRadiationRadius() {
+        return radiationRadius;
+    }
+
+    public void setRadiationRadius(double radiationRadius) {
+        this.radiationRadius = radiationRadius;
+    }
 
     public double getMaxVelocity() {
         return maxVelocity;
@@ -61,6 +75,22 @@ public class ChemitaxisSim extends SimState {
         this.numInsulationParticles = numInsulationParticles;
     }
 
+    public int getInsulatingIntensity() {
+        return insulatingIntensity;
+    }
+
+    public void setInsulatingIntensity(int insulatingIntensity) {
+        this.insulatingIntensity = insulatingIntensity;
+    }
+
+    public int getRadiationIntensity() {
+        return radiationIntensity;
+    }
+
+    public void setRadiationIntensity(int radiationIntensity) {
+        this.radiationIntensity = radiationIntensity;
+    }
+
     public ChemitaxisSim(long seed) {
         super(seed);
     }
@@ -68,19 +98,19 @@ public class ChemitaxisSim extends SimState {
     private Particle initializeParticle(Particle particle){
         schedule.scheduleRepeating(Schedule.EPOCH, 1, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateIntensity();
+                particle.stepUpdateVelocity();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 2, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateVelocity();
+                particle.stepUpdatePosition();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdatePosition();
+                particle.stepUpdateRadiation();
             }
         });
         return particle;
