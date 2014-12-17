@@ -18,8 +18,6 @@ package chemitaxis;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
 
-import java.awt.*;
-
 /**
  * Created by cbadenes on 12/12/14.
  */
@@ -68,10 +66,8 @@ public abstract class Particle {
             position.addIn(velocity);
 
             // Toroidal space
-            double wrappedX = (Math.abs(position.x) >= maxWidth)? sim.space.stx(position.x) : position.x;
-            double wrappedY = (Math.abs(position.y) >= maxHeight)? sim.space.sty(position.y) : position.y;
-            position.setX(wrappedX);
-            position.setY(wrappedY);
+            position.x = sim.space.stx(position.x);
+            position.y = sim.space.sty(position.y);
 
             sim.space.setObjectLocation(this, new Double2D(position));
 
