@@ -21,6 +21,8 @@ import sim.display.GUIState;
 import sim.engine.SimState;
 import sim.portrayal.DrawInfo2D;
 import sim.portrayal.continuous.ContinuousPortrayal2D;
+import sim.portrayal.simple.CircledPortrayal2D;
+import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
 
 import javax.swing.*;
@@ -76,7 +78,9 @@ public class ChemitaxisSimWithUI extends GUIState {
         displayFrame.setTitle("Chemitaxis-based Self-Organization");
         c.registerFrame(displayFrame);
         displayFrame.setVisible(true);
-        display.attach(swarmPortrayal, "Behold the Swarm!",
+        display.attach(
+                swarmPortrayal,
+                "Behold the Swarm!",
                 0.0,
                 0.0,
                 true);
@@ -93,7 +97,7 @@ public class ChemitaxisSimWithUI extends GUIState {
                 final Particle p = (Particle) o;
                 swarmPortrayal.setPortrayalForObject(
                         p,
-                        new RectanglePortrayal2D(Color.green, 0.05) {
+                        new OvalPortrayal2D(Color.green, swarm.particleWidth) {
                             public void draw(Object object, Graphics2D graphics,DrawInfo2D info) {
                                 paint = p.getColor();
                                 super.draw(object, graphics, info);

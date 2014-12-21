@@ -25,68 +25,58 @@ import sim.field.network.Network;
  */
 public class ChemitaxisSim extends SimState {
 
-    public double width = 5.0;
-    public double height = 5.0;
-    public double discretization = 0.1;
+    public double width             = 2.0;
+    public double height            = 2.0;
+    public double particleWidth     = 0.06; // 75% width
+
     public Continuous2D space;
 
     private RadiationParticle[] radiationParticles;
     private InsulationParticle[] insulationParticles;
 
-    private int numRadioctiveParticles = 5;
-    private int numInsulationParticles = 20;
+    private int numRadioctiveParticles = 1;
+    private int numInsulationParticles = 1;
 
-    private int radiationIntensity = 2;
-    private double radiationRadius = 0.5;
-
+    private int radiationIntensity  = 2;
+    private double radiationRadius  = 0.5;
     private int insulatingIntensity = 1;
+    private double maxVelocity      = 0.2;
 
-    private double maxVelocity = 1.0;
 
+    // Properties
     public double getRadiationRadius() {
         return radiationRadius;
     }
-
     public void setRadiationRadius(double radiationRadius) {
         this.radiationRadius = radiationRadius;
     }
-
     public double getMaxVelocity() {
         return maxVelocity;
     }
-
     public void setMaxVelocity(double maxVelocity) {
         this.maxVelocity = maxVelocity;
     }
-
     public int getNumRadioctiveParticles() {
         return numRadioctiveParticles;
     }
-
     public void setNumRadioctiveParticles(int numRadioctiveParticles) {
         this.numRadioctiveParticles = numRadioctiveParticles;
     }
-
     public int getNumInsulationParticles() {
         return numInsulationParticles;
     }
-
     public void setNumInsulationParticles(int numInsulationParticles) {
         this.numInsulationParticles = numInsulationParticles;
     }
-
     public int getInsulatingIntensity() {
         return insulatingIntensity;
     }
-
     public void setInsulatingIntensity(int insulatingIntensity) {
         this.insulatingIntensity = insulatingIntensity;
     }
-
     public int getRadiationIntensity() {
         return radiationIntensity;
     }
-
     public void setRadiationIntensity(int radiationIntensity) {
         this.radiationIntensity = radiationIntensity;
     }
@@ -98,17 +88,23 @@ public class ChemitaxisSim extends SimState {
     private Particle initializeParticle(Particle particle){
         schedule.scheduleRepeating(Schedule.EPOCH, 1, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateVelocity();
+                particle.stepUpdateForce();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 2, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdatePosition();
+                particle.stepUpdateVelocity();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
+            public void step(SimState state) {
+                particle.stepUpdatePosition();
+            }
+        });
+
+        schedule.scheduleRepeating(Schedule.EPOCH, 4, new Steppable() {
             public void step(SimState state) {
                 particle.stepUpdateRadiation();
             }
@@ -118,16 +114,16 @@ public class ChemitaxisSim extends SimState {
 
     public void start() {
         super.start();
-        space = new Continuous2D(discretization, width, height);
+        space = new Continuous2D(particleWidth, width, height);
 
         radiationParticles = new RadiationParticle[numRadioctiveParticles];
         for (int i = 0; i < numRadioctiveParticles; i++) {
-            radiationParticles[i] = (RadiationParticle) initializeParticle(new RadiationParticle(this, i));
+            radiationParticles[i] = (RadiationParticle) initializeParticle(new RadiationParticle(this, "r-"+i));
         }
 
         insulationParticles = new InsulationParticle[numInsulationParticles];
         for (int i = 0; i < numInsulationParticles; i++) {
-            insulationParticles[i] = (InsulationParticle) initializeParticle(new InsulationParticle(this, i));
+            insulationParticles[i] = (InsulationParticle) initializeParticle(new InsulationParticle(this, "i-"+i));
         }
 
 

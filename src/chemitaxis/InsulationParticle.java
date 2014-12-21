@@ -15,9 +15,12 @@
 
 package chemitaxis;
 
+import sim.util.Bag;
+import sim.util.Double2D;
 import sim.util.gui.SimpleColorMap;
 
 import java.awt.*;
+import java.util.Iterator;
 
 /**
  * Created by cbadenes on 12/12/14.
@@ -30,13 +33,12 @@ public class InsulationParticle extends Particle {
             Color.white,
             Color.blue);
 
-    protected InsulationParticle(ChemitaxisSim sim, int id) {
+    protected InsulationParticle(ChemitaxisSim sim, String id) {
         super(
                 sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
                 sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
                 (sim.random.nextDouble() % sim.getMaxVelocity()),
-                (sim.random.nextDouble() % sim.
-                        getMaxVelocity()),
+                (sim.random.nextDouble() % sim.getMaxVelocity()),
                 sim,
                 id,
                 sim.getInsulatingIntensity()
@@ -49,12 +51,36 @@ public class InsulationParticle extends Particle {
     }
 
     @Override
-    public void stepUpdateRadiation() {
-
+    public void stepUpdateForce(){
+        this.force.intensity = 0;
+        this.force.source = id;
     }
 
     @Override
     public void stepUpdateVelocity(){
+        this.velocity.setX(sim.random.nextDouble() % sim.getMaxVelocity());
+        this.velocity.setY(sim.random.nextDouble() % sim.getMaxVelocity());
+
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius(), true);
+
+        double minimumDistance = sim.getRadiationRadius();
+
+        Iterator iterator = neighbors.iterator();
+        while(iterator.hasNext()){
+            Particle particle = (Particle) iterator.next();
+            if (particle instanceof RadiationParticle){
+                double distance = this.position.distance(particle.position);
+                if (distance <= minimumDistance){
+                    minimumDistance = distance;
+                    this.velocity.setX(particle.position.x - this.position.x);
+                    this.velocity.setY(particle.position.y - this.position.y);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void stepUpdateRadiation() {
 
     }
 }

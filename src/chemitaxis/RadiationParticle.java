@@ -33,7 +33,7 @@ public class RadiationParticle extends Particle {
             Color.green,
             Color.red);
 
-    protected RadiationParticle(ChemitaxisSim sim, int id) {
+    protected RadiationParticle(ChemitaxisSim sim, String id) {
         super(
                 sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
                 sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
@@ -51,7 +51,16 @@ public class RadiationParticle extends Particle {
     }
 
     @Override
+    public void stepUpdateForce(){
+        this.force.source = this.id;
+        this.force.intensity = 0;
+    }
+
+    @Override
     public void stepUpdateVelocity(){
+        calculateForce();
+        velocity.setY(force.getDesplacementOverY());
+        velocity.setX(force.getDesplacementOverX());
 
     }
 

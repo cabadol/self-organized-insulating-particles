@@ -15,27 +15,38 @@
 
 package chemitaxis;
 
+import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
+
+import java.util.Iterator;
 
 /**
  * Created by cbadenes on 12/12/14.
  */
 public abstract class Particle {
 
+    public enum State{
+        FREE, INSULATE, ATTACHED;
+    }
+
     protected MutableDouble2D position = new MutableDouble2D();
     protected MutableDouble2D velocity = new MutableDouble2D();
 
-    protected int id;
     protected ChemitaxisSim sim;
+    protected String id;
     protected int intensity;
+    protected Force force;
+    protected State status;
 
-    protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, int id, int intensity) {
+    protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, String id, int intensity) {
         this.id = id;
         this.sim = sim;
         this.position.setTo(x, y);
         this.velocity.setTo(vx, vy);
         this.intensity = intensity;
+        this.status = State.FREE;
+        this.force = new Force(0,id,0.0,0.0);
         sim.space.setObjectLocation(this,new Double2D(position));
     }
 
@@ -43,23 +54,88 @@ public abstract class Particle {
 
     public abstract void stepUpdateRadiation();
 
-    public void stepUpdateVelocity(){
-        double x = position.x;
-        double y = position.y;
-    }
+    public abstract void stepUpdateVelocity();
+
+    public abstract void stepUpdateForce();
 
     public void stepUpdatePosition(){
-        if (velocity.length() > 0){
-
+        if (velocity.length() > 0 ){
+            // Move
             position.addIn(velocity);
 
-            // Toroidal space
-            position.x = sim.space.stx(position.x);
-            position.y = sim.space.sty(position.y);
+            // Adjust to toroidal space
+            this.position.x = sim.space.stx(position.x);
+            this.position.y = sim.space.sty(position.y);
 
-            sim.space.setObjectLocation(this, new Double2D(position));
-
+            avoidCollision();
         }
+
+        sim.space.setObjectLocation(this, new Double2D(position));
+    }
+
+    private void avoidCollision(){
+
+        // Check neighbours
+        Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+        if ((neighbours.size() == 0)) return;
+
+        double displacementX = 0.0;
+        double displacementY = 0.0;
+
+        Iterator iterator = neighbours.iterator();
+        while(iterator.hasNext()){
+            double newX;
+            double newY;
+            Particle neighbour = (Particle) iterator.next();
+            // Avoid self
+            if (neighbour.id.equals(this.id)) continue;
+
+            // X-Axis
+            double displacement = sim.particleWidth - Math.abs(this.position.x - neighbour.position.x);
+            if (velocity.x > 0){
+                newX = position.x - displacement;
+            } else if (velocity.x < 0) {
+                newX = position.x + displacement;
+            } else{
+                newX = position.x;
+            }
+
+            //Y-Axis
+            displacement = sim.particleWidth - Math.abs(this.position.y - neighbour.position.y);
+            if (velocity.y > 0){
+                newY = position.y - displacement;
+            } else if (velocity.y < 0) {
+                newY = position.y + displacement;
+            } else{
+                newY = position.y;
+            }
+            displacementX += newX - this.position.x;
+            displacementY += newY - this.position.y;
+        }
+        if (displacementX == 0.0 && displacementY == 0.0) {
+            // not move
+            return;
+        }
+
+        this.velocity.setX(displacementX);
+        this.velocity.setY(displacementY);
+        stepUpdatePosition();
+    }
+
+    protected void calculateForce (){
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), 1, true);
+        Iterator iterator = neighbors.iterator();
+        while(iterator.hasNext()){
+            Object neighbor = iterator.next();
+            if (neighbor instanceof Particle){
+                Particle particle = (Particle) neighbor;
+                if ((this.force.source.equals(particle.force.source))
+                        &(this.force.getIntensity() <  particle.force.getIntensity())){
+                    this.force = particle.force;
+                }
+            }
+        }
+
     }
 
 
