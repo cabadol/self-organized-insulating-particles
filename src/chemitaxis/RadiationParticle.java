@@ -50,18 +50,57 @@ public class RadiationParticle extends Particle {
         return map.getColor(intensity <= 0? 0 : sim.getRadiationIntensity()*100);
     }
 
-    @Override
-    public void stepUpdateForce(){
-        this.force.source = this.id;
-        this.force.intensity = 0;
-    }
 
     @Override
     public void stepUpdateVelocity(){
-        calculateForce();
-        velocity.setY(force.getDesplacementOverY());
-        velocity.setX(force.getDesplacementOverX());
-
+//        if (this.intensity == 0){
+//            // Join to others radioactive particles without radiation
+//            double displacementX = 0.0;
+//            double displacementY = 0.0;
+//            double x1 = this.position.x;
+//            double y1 = this.position.y;
+//            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius()*4);
+//            if (neighbors.size() > 1){
+//                Iterator iterator = neighbors.iterator();
+//                while(iterator.hasNext()){
+//                    Particle particle = (Particle) iterator.next();
+//                    if ((particle.id.equals(this.id)) || (particle instanceof InsulationParticle)) continue;
+//                    // Force
+//                    double distance = this.position.distance(particle.position);
+//                    double force = 1 / (distance*2); // inverse to distance
+//                    // Neighbour Particle
+//                    double x2 = particle.position.x;
+//                    double y2 = particle.position.y;
+//                    // Distance
+//                    double partialX = Math.abs(x2 - x1);
+//                    double partialY = Math.abs(y2 - y1);
+//                    // Orientation
+//                    if (particle.intensity == 0){
+//                        // Attractive Force
+//                        // X-Axis
+//                        if (x2 > x1){
+//                            displacementX += force * (partialX/partialY);
+//                        } else if (x2 < x1){
+//                            displacementX -= force * (partialX/partialY);
+//                        }
+//                        // Y-Axis
+//                        if (y2 > y1){
+//                            displacementY += force * (partialY/partialX);
+//                        } else if (y2 < y1){
+//                            displacementY -= force * (partialY/partialX);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if ((displacementX == 0) && (displacementY == 0)) {
+//                displacementX = (sim.random.nextDouble() * sim.width) - (sim.width * 0.5);
+//                displacementY = (sim.random.nextDouble() * sim.height) - (sim.height * 0.5);
+//            }
+//
+//            Double2D partialVelocity = adjustToMaxVelocity(new Double2D(displacementX, displacementY));
+//            this.velocity.setTo(partialVelocity);
+//        }
     }
 
     @Override

@@ -82,23 +82,17 @@ public class ChemitaxisSim extends SimState {
     private Particle initializeParticle(Particle particle){
         schedule.scheduleRepeating(Schedule.EPOCH, 1, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateForce();
+                particle.stepUpdateVelocity();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 2, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateVelocity();
-            }
-        });
-
-        schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
-            public void step(SimState state) {
                 particle.stepUpdatePosition();
             }
         });
 
-        schedule.scheduleRepeating(Schedule.EPOCH, 4, new Steppable() {
+        schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
             public void step(SimState state) {
                 particle.stepUpdateRadiation();
             }

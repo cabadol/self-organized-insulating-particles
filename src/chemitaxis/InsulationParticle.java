@@ -55,18 +55,12 @@ public class InsulationParticle extends Particle {
     }
 
     @Override
-    public void stepUpdateForce(){
-        this.force.intensity = 0;
-        this.force.source = id;
-    }
-
-    @Override
     public void stepUpdateVelocity(){
         double displacementX = 0.0;
         double displacementY = 0.0;
         double x1 = this.position.x;
         double y1 = this.position.y;
-        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius()*2);
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
         if (neighbors.size() > 1){
             Iterator iterator = neighbors.iterator();
             while(iterator.hasNext()){
@@ -114,27 +108,7 @@ public class InsulationParticle extends Particle {
         this.velocity.setTo(partialVelocity);
     }
 
-    private Double2D adjustToMaxVelocity(Double2D displacement){
-        if ((Math.abs(displacement.getY()) < sim.getMaxVelocity())
-                && (Math.abs(displacement.getX()) < sim.getMaxVelocity())) return displacement;
 
-        double absX = Math.abs(displacement.x);
-        double absY = Math.abs(displacement.y);
-
-        double valueX = (displacement.x < 0)? -1 : 1;
-        double valueY = (displacement.y < 0)? -1 : 1;
-
-        if (absY >= absX){
-            valueX *= (absX*sim.getMaxVelocity())/absY;
-            valueY *= sim.getMaxVelocity();
-
-        }else{
-            valueY *= (absY*sim.getMaxVelocity())/absX;
-            valueX *= sim.getMaxVelocity();
-        }
-        return new Double2D(valueX, valueY);
-
-    }
 
     @Override
     public void stepUpdatePosition(){
