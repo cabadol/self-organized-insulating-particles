@@ -35,12 +35,12 @@ public class ChemitaxisSim extends SimState {
     private InsulationParticle[] insulationParticles;
 
     private int numRadioctiveParticles = 1;
-    private int numInsulationParticles = 1;
+    private int numInsulationParticles = 2;
 
     private int radiationIntensity  = 2;
-    private double radiationRadius  = 0.5;
-    private int insulatingIntensity = 1;
-    private double maxVelocity      = 0.2;
+
+    private double radiationRadius  = 0.2;
+    private double maxVelocity      = 0.06;
 
 
     // Properties
@@ -67,12 +67,6 @@ public class ChemitaxisSim extends SimState {
     }
     public void setNumInsulationParticles(int numInsulationParticles) {
         this.numInsulationParticles = numInsulationParticles;
-    }
-    public int getInsulatingIntensity() {
-        return insulatingIntensity;
-    }
-    public void setInsulatingIntensity(int insulatingIntensity) {
-        this.insulatingIntensity = insulatingIntensity;
     }
     public int getRadiationIntensity() {
         return radiationIntensity;
@@ -114,7 +108,7 @@ public class ChemitaxisSim extends SimState {
 
     public void start() {
         super.start();
-        space = new Continuous2D(particleWidth, width, height);
+        space = new Continuous2D(0.01, width, height);
 
         radiationParticles = new RadiationParticle[numRadioctiveParticles];
         for (int i = 0; i < numRadioctiveParticles; i++) {

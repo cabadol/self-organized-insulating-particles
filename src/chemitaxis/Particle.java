@@ -60,6 +60,9 @@ public abstract class Particle {
 
     public void stepUpdatePosition(){
         if (velocity.length() > 0 ){
+
+            Double2D startingPoint =  new Double2D(this.position);
+
             // Move
             position.addIn(velocity);
 
@@ -67,13 +70,18 @@ public abstract class Particle {
             this.position.x = sim.space.stx(position.x);
             this.position.y = sim.space.sty(position.y);
 
-            avoidCollision();
+            // Check neighbours
+            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+            if ((neighbours.size() > 0)) {
+                this.position.setTo(startingPoint);
+                return;
+            }
         }
 
         sim.space.setObjectLocation(this, new Double2D(position));
     }
 
-    private void avoidCollision(){
+    private void avoidCollision(Double2D startingPoint){
 
         // Check neighbours
         Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
@@ -83,11 +91,15 @@ public abstract class Particle {
         double displacementY = 0.0;
 
         Iterator iterator = neighbours.iterator();
+        double x1 = startingPoint.x;
+        double y1 = startingPoint.y;
+        double x2 = this.position.x;
+        double y2 = this.position.y;
+
         while(iterator.hasNext()){
             double newX;
             double newY;
             Particle neighbour = (Particle) iterator.next();
-            // Avoid self
             if (neighbour.id.equals(this.id)) continue;
 
             // X-Axis
@@ -101,14 +113,8 @@ public abstract class Particle {
             }
 
             //Y-Axis
-            displacement = sim.particleWidth - Math.abs(this.position.y - neighbour.position.y);
-            if (velocity.y > 0){
-                newY = position.y - displacement;
-            } else if (velocity.y < 0) {
-                newY = position.y + displacement;
-            } else{
-                newY = position.y;
-            }
+            newY = ((y2-y1)/(x2-x1))*(newX-x1)+y1;
+
             displacementX += newX - this.position.x;
             displacementY += newY - this.position.y;
         }
@@ -119,7 +125,7 @@ public abstract class Particle {
 
         this.velocity.setX(displacementX);
         this.velocity.setY(displacementY);
-        stepUpdatePosition();
+//        move();
     }
 
     protected void calculateForce (){

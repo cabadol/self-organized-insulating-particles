@@ -29,8 +29,8 @@ public class RadiationParticle extends Particle {
 
     final SimpleColorMap map = new SimpleColorMap(
             0,
-            sim.getRadiationIntensity(),
-            Color.green,
+            sim.getRadiationIntensity()*100,
+            Color.white,
             Color.red);
 
     protected RadiationParticle(ChemitaxisSim sim, String id) {
@@ -47,7 +47,7 @@ public class RadiationParticle extends Particle {
 
     @Override
     public Color getColor() {
-        return map.getColor(intensity < 0? 0 : intensity);
+        return map.getColor(intensity <= 0? 0 : sim.getRadiationIntensity()*100);
     }
 
     @Override
@@ -68,16 +68,15 @@ public class RadiationParticle extends Particle {
     public void stepUpdateRadiation() {
         Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
 
-        int insulatingLevel = 0;
+        if (this.intensity <= 0) return;
+
         Iterator iterator = neighbors.iterator();
         while(iterator.hasNext()){
             Particle particle = (Particle) iterator.next();
             if (particle instanceof InsulationParticle){
-                insulatingLevel += ((InsulationParticle) particle).intensity;
+                ((InsulationParticle) particle).radiate(this);
             }
         }
-        
-        intensity = sim.getRadiationIntensity() - insulatingLevel;
     }
 
 }

@@ -21,9 +21,7 @@ import sim.display.GUIState;
 import sim.engine.SimState;
 import sim.portrayal.DrawInfo2D;
 import sim.portrayal.continuous.ContinuousPortrayal2D;
-import sim.portrayal.simple.CircledPortrayal2D;
 import sim.portrayal.simple.OvalPortrayal2D;
-import sim.portrayal.simple.RectanglePortrayal2D;
 
 import javax.swing.*;
 import java.awt.*;
