@@ -33,11 +33,11 @@ public class ChemitaxisSim extends SimState {
     private RadiationParticle[] radiationParticles;
     private InsulationParticle[] insulationParticles;
 
-    private int numRadioactiveParticles = 1;
-    private int numInsulationParticles  = 1;
-    private int radiationIntensity  = 1;
+    private int numRadioactiveParticles = 2;
+    private int numInsulationParticles  = 50;
+    private int radiationIntensity  = 2;
 
-    private double radiationRadius  = 0.2;
+    private double radiationRadius  = 0.5;
     private double joiningRadius    = 3.0;
     private double maxVelocity      = 0.06;
 

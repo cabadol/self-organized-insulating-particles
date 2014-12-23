@@ -17,6 +17,7 @@ package chemitaxis;
 
 import sim.util.Bag;
 import sim.util.Double2D;
+import sim.util.MutableDouble2D;
 import sim.util.gui.SimpleColorMap;
 
 import java.awt.*;
@@ -55,10 +56,8 @@ public class RadiationParticle extends Particle {
     public void stepUpdateVelocity(){
         if (this.intensity == 0){
             // Join to others radioactive particles without radiation
-            double displacementX = 0.0;
-            double displacementY = 0.0;
-            double x1 = this.position.x;
-            double y1 = this.position.y;
+            MutableDouble2D displacement = new MutableDouble2D(0.0,0.0);
+
             Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getJoiningRadius());
             if (neighbors.size() > 1){
                 Iterator iterator = neighbors.iterator();
@@ -68,32 +67,13 @@ public class RadiationParticle extends Particle {
                             || (particle instanceof InsulationParticle)
                             || ((RadiationParticle) particle).intensity > 0) continue;
                     if (distance(particle.position, this.position) <= sim.particleWidth) continue;
-                    // Force
-                    double force = 1 / (distance(this.position, particle.position)); // inverse to distance
-                    // Neighbour Particle
-                    double x2 = particle.position.x;
-                    double y2 = particle.position.y;
-                    // Distance
-                    double partialX = Math.abs(x2 - x1);
-                    double partialY = Math.abs(y2 - y1);
-                    // Attractive Force
-                    // X-Axis
-                    if (x2 > x1){
-                        displacementX += force * (partialX/partialY);
-                    } else if (x2 < x1){
-                        displacementX -= force * (partialX/partialY);
-                    }
-                    // Y-Axis
-                    if (y2 > y1){
-                        displacementY += force * (partialY/partialX);
-                    } else if (y2 < y1){
-                        displacementY -= force * (partialY/partialX);
-                    }
 
+                    Double2D force = calculateDisplacementBy(particle.position, 1.0);
+                    displacement.addIn(force);
                 }
             }
-            Double2D partialVelocity = adjustToMaxVelocity(new Double2D(displacementX, displacementY));
-            this.velocity.setTo(partialVelocity);
+            MutableDouble2D limitedVelocity = limitToMaxVelocity(displacement);
+            this.velocity.setTo(limitedVelocity);
         }
     }
 
@@ -127,22 +107,29 @@ public class RadiationParticle extends Particle {
         }
 
         sim.space.setObjectLocation(this, new Double2D(position));
+        this.velocity.setTo(0.0,0.0);
     }
 
 
     @Override
     public void stepUpdateRadiation() {
-        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
+//        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
+//
+//        if (this.intensity <= 0) return;
+//
+//        Iterator iterator = neighbors.iterator();
+//        while(iterator.hasNext()){
+//            Particle particle = (Particle) iterator.next();
+//            if (particle instanceof InsulationParticle){
+//                ((InsulationParticle) particle).radiate(this);
+//            }
+//        }
+    }
 
-        if (this.intensity <= 0) return;
-
-        Iterator iterator = neighbors.iterator();
-        while(iterator.hasNext()){
-            Particle particle = (Particle) iterator.next();
-            if (particle instanceof InsulationParticle){
-                ((InsulationParticle) particle).radiate(this);
-            }
-        }
+    public synchronized int isolate(int intensity){
+        if (this.intensity == 0) return 0;
+        this.intensity -= intensity;
+        return this.intensity+intensity;
     }
 
 }
