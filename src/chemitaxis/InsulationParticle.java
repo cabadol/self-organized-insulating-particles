@@ -17,6 +17,7 @@ package chemitaxis;
 
 import sim.util.Bag;
 import sim.util.Double2D;
+import sim.util.MutableDouble2D;
 import sim.util.gui.SimpleColorMap;
 
 import java.awt.*;
@@ -67,7 +68,7 @@ public class InsulationParticle extends Particle {
                 Particle particle = (Particle) iterator.next();
                 if (particle.id.equals(this.id)) continue;
                 // Force
-                double distance = this.position.distance(particle.position);
+                double distance = distance(this.position, particle.position);
                 double force = 1 / (distance*2); // inverse to distance
                 // Neighbour Particle
                 double x2 = particle.position.x;
@@ -99,11 +100,13 @@ public class InsulationParticle extends Particle {
                     displacementY -= force * (partialY/partialX);
                 }
             }
-        } else {
+        }
 
+        if (displacementX == 0.0 && displacementY == 0.0) {
             displacementX = (sim.random.nextDouble() * sim.width) - (sim.width * 0.5);
             displacementY = (sim.random.nextDouble() * sim.height) - (sim.height * 0.5);
         }
+
         Double2D partialVelocity = adjustToMaxVelocity(new Double2D(displacementX, displacementY));
         this.velocity.setTo(partialVelocity);
     }
@@ -113,23 +116,45 @@ public class InsulationParticle extends Particle {
     @Override
     public void stepUpdatePosition(){
 
-        super.stepUpdatePosition();
-        // Maintain a maximum distance to radioactive particle
-        if ((source != null) && (this.position.distance(source.position) > sim.getRadiationRadius())){
-            double backwardX = this.velocity.x/10;
-            double backwardY = this.velocity.y/10;
+        if (velocity.length() > 0 ){
 
-            do{
-                this.velocity.setX(this.velocity.getX()-backwardX);
-                this.velocity.setY(this.velocity.getY()-backwardY);
+            MutableDouble2D startingPoint = (MutableDouble2D) this.position.clone();
 
-                super.stepUpdatePosition();
+            // Move
+            position.addIn(velocity);
 
-            }while(this.position.distance(source.position) > sim.getRadiationRadius());
+            // Adjust to toroidal space
+            this.position.x = sim.space.stx(position.x);
+            this.position.y = sim.space.sty(position.y);
 
-            sim.space.setObjectLocation(this, new Double2D(position));
+            // Check neighbours
+            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+            Double2D backward = new Double2D(-this.velocity.x/10,-this.velocity.y/10);
+            while (neighbours.size() > 0) {
+                this.position.addIn(backward);
+                if (neighbours.contains(this) && neighbours.size()==1) break;
+                neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+            }
         }
 
+
+//        // Maintain a maximum distance to radioactive particle
+//        if ((source != null) && ( distance(this.position, this.source.position) > sim.getRadiationRadius())){
+//            double backwardX = this.velocity.x/10;
+//            double backwardY = this.velocity.y/10;
+//
+//            do{
+//                this.velocity.setX(this.velocity.getX()-backwardX);
+//                this.velocity.setY(this.velocity.getY()-backwardY);
+//
+//                super.stepUpdatePosition();
+//
+//            }while(  distance(this.position, this.source.position) > sim.getRadiationRadius());
+//
+//            sim.space.setObjectLocation(this, new Double2D(position));
+//        }
+
+        sim.space.setObjectLocation(this, new Double2D(position));
     }
 
 

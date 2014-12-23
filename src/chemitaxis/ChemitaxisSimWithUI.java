@@ -85,17 +85,17 @@ public class ChemitaxisSimWithUI extends GUIState {
     }
 
     public void setupPortrayals() {
-        ChemitaxisSim swarm = (ChemitaxisSim) state;
+        ChemitaxisSim sim = (ChemitaxisSim) state;
 
-        swarmPortrayal.setField(swarm.space);
+        swarmPortrayal.setField(sim.space);
 
-        for (int x = 0; x < swarm.space.allObjects.numObjs; x++) {
-            Object o = swarm.space.allObjects.objs[x];
+        for (int x = 0; x < sim.space.allObjects.numObjs; x++) {
+            Object o = sim.space.allObjects.objs[x];
             if (o instanceof Particle) {
                 final Particle p = (Particle) o;
                 swarmPortrayal.setPortrayalForObject(
                         p,
-                        new OvalPortrayal2D(Color.green, swarm.particleWidth) {
+                        new OvalPortrayal2D(Color.green, sim.particleWidth) {
                             public void draw(Object object, Graphics2D graphics,DrawInfo2D info) {
                                 paint = p.getColor();
                                 super.draw(object, graphics, info);
@@ -104,8 +104,8 @@ public class ChemitaxisSimWithUI extends GUIState {
             }
         }
         // update the size of the display appropriately.
-        double w = swarm.space.getWidth();
-        double h = swarm.space.getHeight();
+        double w = sim.space.getWidth();
+        double h = sim.space.getHeight();
         if (w == h)
         {
             display.insideDisplay.width = display.insideDisplay.height = 750;

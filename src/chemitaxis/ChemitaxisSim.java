@@ -18,7 +18,6 @@ import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
-import sim.field.network.Network;
 
 /**
  * Created by cbadenes on 05/12/14.
@@ -34,16 +33,23 @@ public class ChemitaxisSim extends SimState {
     private RadiationParticle[] radiationParticles;
     private InsulationParticle[] insulationParticles;
 
-    private int numRadioctiveParticles = 1;
-    private int numInsulationParticles = 2;
-
-    private int radiationIntensity  = 2;
+    private int numRadioactiveParticles = 1;
+    private int numInsulationParticles  = 1;
+    private int radiationIntensity  = 1;
 
     private double radiationRadius  = 0.2;
+    private double joiningRadius    = 3.0;
     private double maxVelocity      = 0.06;
 
 
     // Properties
+
+    public double getJoiningRadius() {
+        return joiningRadius;
+    }
+    public void setJoiningRadius(double joiningRadius) {
+        this.joiningRadius = joiningRadius;
+    }
     public double getRadiationRadius() {
         return radiationRadius;
     }
@@ -56,11 +62,11 @@ public class ChemitaxisSim extends SimState {
     public void setMaxVelocity(double maxVelocity) {
         this.maxVelocity = maxVelocity;
     }
-    public int getNumRadioctiveParticles() {
-        return numRadioctiveParticles;
+    public int getNumRadioactiveParticles() {
+        return numRadioactiveParticles;
     }
-    public void setNumRadioctiveParticles(int numRadioctiveParticles) {
-        this.numRadioctiveParticles = numRadioctiveParticles;
+    public void setNumRadioactiveParticles(int numRadioactiveParticles) {
+        this.numRadioactiveParticles = numRadioactiveParticles;
     }
     public int getNumInsulationParticles() {
         return numInsulationParticles;
@@ -104,8 +110,8 @@ public class ChemitaxisSim extends SimState {
         super.start();
         space = new Continuous2D(0.01, width, height);
 
-        radiationParticles = new RadiationParticle[numRadioctiveParticles];
-        for (int i = 0; i < numRadioctiveParticles; i++) {
+        radiationParticles = new RadiationParticle[numRadioactiveParticles];
+        for (int i = 0; i < numRadioactiveParticles; i++) {
             radiationParticles[i] = (RadiationParticle) initializeParticle(new RadiationParticle(this, "r-"+i));
         }
 
@@ -113,30 +119,6 @@ public class ChemitaxisSim extends SimState {
         for (int i = 0; i < numInsulationParticles; i++) {
             insulationParticles[i] = (InsulationParticle) initializeParticle(new InsulationParticle(this, "i-"+i));
         }
-
-
-
-        // Function to stop the process
-//        schedule.scheduleRepeating(Schedule.EPOCH, 4, new Steppable() {
-//            public void step(SimState state) {
-//                int count = 0;
-//                for (int i = 0; i < space.allObjects.numObjs; i++) {
-//                    Object o = space.allObjects.get(i);
-//
-//                    if (o instanceof Particle) {
-//                        Particle p = (Particle) o;
-//                        if (Math.abs(p.getFitness() - FUNCTION_SCALE -
-//                                functionProperties[_fFunction]
-//                                        [FUNCTION_GLOBALMIN])
-//                                <= _fSuccessThreshold)
-//                            count++;
-//                    }
-//                }
-//                if (count == _fNumParticles)
-//                    state.kill();
-//            }
-//        });
-
     }
 
     public static void main(String[] args) {

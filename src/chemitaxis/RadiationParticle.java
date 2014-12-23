@@ -53,55 +53,82 @@ public class RadiationParticle extends Particle {
 
     @Override
     public void stepUpdateVelocity(){
-//        if (this.intensity == 0){
-//            // Join to others radioactive particles without radiation
-//            double displacementX = 0.0;
-//            double displacementY = 0.0;
-//            double x1 = this.position.x;
-//            double y1 = this.position.y;
-//            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius()*4);
-//            if (neighbors.size() > 1){
-//                Iterator iterator = neighbors.iterator();
-//                while(iterator.hasNext()){
-//                    Particle particle = (Particle) iterator.next();
-//                    if ((particle.id.equals(this.id)) || (particle instanceof InsulationParticle)) continue;
-//                    // Force
-//                    double distance = this.position.distance(particle.position);
-//                    double force = 1 / (distance*2); // inverse to distance
-//                    // Neighbour Particle
-//                    double x2 = particle.position.x;
-//                    double y2 = particle.position.y;
-//                    // Distance
-//                    double partialX = Math.abs(x2 - x1);
-//                    double partialY = Math.abs(y2 - y1);
-//                    // Orientation
-//                    if (particle.intensity == 0){
-//                        // Attractive Force
-//                        // X-Axis
-//                        if (x2 > x1){
-//                            displacementX += force * (partialX/partialY);
-//                        } else if (x2 < x1){
-//                            displacementX -= force * (partialX/partialY);
-//                        }
-//                        // Y-Axis
-//                        if (y2 > y1){
-//                            displacementY += force * (partialY/partialX);
-//                        } else if (y2 < y1){
-//                            displacementY -= force * (partialY/partialX);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if ((displacementX == 0) && (displacementY == 0)) {
-//                displacementX = (sim.random.nextDouble() * sim.width) - (sim.width * 0.5);
-//                displacementY = (sim.random.nextDouble() * sim.height) - (sim.height * 0.5);
-//            }
-//
-//            Double2D partialVelocity = adjustToMaxVelocity(new Double2D(displacementX, displacementY));
-//            this.velocity.setTo(partialVelocity);
-//        }
+        if (this.intensity == 0){
+            // Join to others radioactive particles without radiation
+            double displacementX = 0.0;
+            double displacementY = 0.0;
+            double x1 = this.position.x;
+            double y1 = this.position.y;
+            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getJoiningRadius());
+            if (neighbors.size() > 1){
+                Iterator iterator = neighbors.iterator();
+                while(iterator.hasNext()){
+                    Particle particle = (Particle) iterator.next();
+                    if ((particle.id.equals(this.id))
+                            || (particle instanceof InsulationParticle)
+                            || ((RadiationParticle) particle).intensity > 0) continue;
+                    if (distance(particle.position, this.position) <= sim.particleWidth) continue;
+                    // Force
+                    double force = 1 / (distance(this.position, particle.position)); // inverse to distance
+                    // Neighbour Particle
+                    double x2 = particle.position.x;
+                    double y2 = particle.position.y;
+                    // Distance
+                    double partialX = Math.abs(x2 - x1);
+                    double partialY = Math.abs(y2 - y1);
+                    // Attractive Force
+                    // X-Axis
+                    if (x2 > x1){
+                        displacementX += force * (partialX/partialY);
+                    } else if (x2 < x1){
+                        displacementX -= force * (partialX/partialY);
+                    }
+                    // Y-Axis
+                    if (y2 > y1){
+                        displacementY += force * (partialY/partialX);
+                    } else if (y2 < y1){
+                        displacementY -= force * (partialY/partialX);
+                    }
+
+                }
+            }
+            Double2D partialVelocity = adjustToMaxVelocity(new Double2D(displacementX, displacementY));
+            this.velocity.setTo(partialVelocity);
+        }
     }
+
+    public void stepUpdatePosition(){
+        if (velocity.length() > 0 ){
+
+            Double2D startingPoint =  new Double2D(this.position);
+
+            // Move
+            position.addIn(velocity);
+
+            // Adjust to toroidal space
+            this.position.x = sim.space.stx(position.x);
+            this.position.y = sim.space.sty(position.y);
+
+            // Check neighbours
+            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+            if ((neighbours.size() > 0)) {
+                Iterator iterator = neighbours.iterator();
+                while(iterator.hasNext()){
+                    Particle particle = (Particle) iterator.next();
+                    if ((particle instanceof RadiationParticle) ){
+                        this.position.setTo(startingPoint);
+                        this.velocity.setTo(new Double2D(0.0,0.0));
+                        return;
+                    }else if (particle instanceof InsulationParticle){
+                        particle.velocity.addIn(this.velocity);
+                    }
+                }
+            }
+        }
+
+        sim.space.setObjectLocation(this, new Double2D(position));
+    }
+
 
     @Override
     public void stepUpdateRadiation() {

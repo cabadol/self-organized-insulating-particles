@@ -48,28 +48,7 @@ public abstract class Particle {
 
     public abstract void stepUpdateVelocity();
 
-    public void stepUpdatePosition(){
-        if (velocity.length() > 0 ){
-
-            Double2D startingPoint =  new Double2D(this.position);
-
-            // Move
-            position.addIn(velocity);
-
-            // Adjust to toroidal space
-            this.position.x = sim.space.stx(position.x);
-            this.position.y = sim.space.sty(position.y);
-
-            // Check neighbours
-            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
-            if ((neighbours.size() > 0)) {
-                this.position.setTo(startingPoint);
-                return;
-            }
-        }
-
-        sim.space.setObjectLocation(this, new Double2D(position));
-    }
+    public abstract void stepUpdatePosition();
 
     protected Double2D adjustToMaxVelocity(Double2D displacement){
         if ((Math.abs(displacement.getY()) < sim.getMaxVelocity())
@@ -90,6 +69,12 @@ public abstract class Particle {
             valueX *= sim.getMaxVelocity();
         }
         return new Double2D(valueX, valueY);
+    }
+
+    protected double distance (MutableDouble2D p1, MutableDouble2D p2){
+        // Handle toroidal space
+        return Math.sqrt(Math.pow( Math.min( Math.abs(p1.x - p2.x),  sim.space.width - Math.abs(p1.x - p2.x)), 2) +
+                                    Math.pow( Math.min( Math.abs(p1.y - p2.y),  sim.space.height - Math.abs(p1.y - p2.y)), 2));
 
     }
 
