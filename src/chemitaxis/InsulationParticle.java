@@ -136,8 +136,8 @@ public class InsulationParticle extends Particle {
         // Maintain a maximum distance to radioactive particle
         double distance = (this.source != null)? distance(this.position, this.source.position) : 0.0 ;
         if ((distance > sim.getRadiationRadius())
-                && (distance > this.source.attached*sim.getRadiationRadius())
-                && ( distance < (this.source.attached*sim.getRadiationRadius()+sim.getMaxVelocity()))
+                && (distance > sim.getRadiationRadius()*this.source.attached)
+                && (distance < (this.source.attached*sim.getRadiationRadius()+sim.getMaxVelocity()))
                 && (source.velocity.length() <= 0.0)
                 ){
             // undo movement
