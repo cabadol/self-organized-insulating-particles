@@ -29,6 +29,7 @@ public class ChemitaxisSim extends SimState {
     public double particleWidth     = 0.06; // 75% width
 
     public Continuous2D space;
+    public Continuous2D area;
 
     private RadiationParticle[] radiationParticles;
     private InsulationParticle[] insulationParticles;
@@ -88,27 +89,30 @@ public class ChemitaxisSim extends SimState {
     private Particle initializeParticle(Particle particle){
         schedule.scheduleRepeating(Schedule.EPOCH, 1, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateVelocity();
+                particle.stepUpdateRadiation();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 2, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdatePosition();
+                particle.stepUpdateVelocity();
             }
         });
 
         schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
             public void step(SimState state) {
-                particle.stepUpdateRadiation();
+                particle.stepUpdatePosition();
             }
         });
+
+
         return particle;
     }
 
     public void start() {
         super.start();
         space = new Continuous2D(0.01, width, height);
+        area  = new Continuous2D(0.04, width, height);
 
         radiationParticles = new RadiationParticle[numRadioactiveParticles];
         for (int i = 0; i < numRadioactiveParticles; i++) {

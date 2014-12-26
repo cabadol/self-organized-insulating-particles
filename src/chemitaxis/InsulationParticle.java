@@ -161,8 +161,11 @@ public class InsulationParticle extends Particle {
     }
 
     private synchronized void attach(RadiationParticle particle){
-        int radiation;
-        if ((this.intensity > 0) && (radiation = particle.isolate(this.intensity)) > 0 ){
+        int radiation = 1;
+        if (
+//                ((this.intensity > 0) && (radiation = particle.isolate(this.intensity)) > 0) ||
+                ((this.source == null) && (distance(particle.position, this.position) < sim.getRadiationRadius()))
+                ){
             this.source = particle;
             this.sourceRadiation = radiation;
             this.intensity = 0;

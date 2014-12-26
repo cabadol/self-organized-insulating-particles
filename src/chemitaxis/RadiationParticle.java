@@ -46,6 +46,7 @@ public class RadiationParticle extends Particle {
                 id,
                 sim.getRadiationIntensity()
         );
+        sim.area.setObjectLocation(this,new Double2D(position));
     }
 
     @Override
@@ -61,18 +62,18 @@ public class RadiationParticle extends Particle {
             attached = 0;
             MutableDouble2D displacement = new MutableDouble2D(0.0,0.0);
 
-            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getJoiningRadius());
+            Bag neighbors = sim.area.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getJoiningRadius());
             if (neighbors.size() > 1){
                 Iterator iterator = neighbors.iterator();
                 while(iterator.hasNext()){
                     Particle particle = (Particle) iterator.next();
                     if ((particle.id.equals(this.id))
                             || (particle instanceof InsulationParticle)
-                            || ((RadiationParticle) particle).intensity > 0) continue;
+                            || (particle.intensity > 0)) continue;
                     attached++;
                     if (distance(particle.position, this.position) <= sim.particleWidth) continue;
 
-                    Double2D force = calculateDisplacementBy(particle.position, 100.0);
+                    Double2D force = calculateDisplacementBy(particle.position, sim.getRadiationIntensity());
                     displacement.addIn(force);
                 }
             }
@@ -112,31 +113,30 @@ public class RadiationParticle extends Particle {
         }
 
         sim.space.setObjectLocation(this, new Double2D(position));
-//        this.velocity.setTo(0.0,0.0);
+        sim.area.setObjectLocation(this,new Double2D(position));
     }
 
 
     @Override
     public void stepUpdateRadiation() {
-//        this.radiation = sim.getRadiationIntensity();
-//        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
-//        Iterator iterator = neighbors.iterator();
-//        while(iterator.hasNext()){
-//            Particle particle = (Particle) iterator.next();
-//            if (particle instanceof InsulationParticle){
-//                isolate(particle.intensity);
-//            }
-//        }
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
+        Iterator iterator = neighbors.iterator();
+        while(iterator.hasNext()){
+            Particle particle = (Particle) iterator.next();
+            if (particle instanceof InsulationParticle){
+                isolate(particle.intensity);
+            }
+        }
     }
 
-    public synchronized int isolate(int intensity){
-        if (this.intensity == 0) return 0;
-        this.intensity -= intensity;
-        //return this.intensity+intensity;
-        return 1;
-    }
-//    public synchronized void isolate(int intensity){
-//        this.radiation -= intensity;
+//    public synchronized int isolate(int intensity){
+//        if (this.intensity == 0) return 0;
+//        this.intensity -= intensity;
+//        //return this.intensity+intensity;
+//        return 1;
 //    }
+    public synchronized void isolate(int intensity){
+        this.intensity -= intensity;
+    }
 
 }
