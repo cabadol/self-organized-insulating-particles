@@ -39,7 +39,7 @@ public class ChemitaxisSim extends SimState {
     private int radiationIntensity  = 5; // 5
 
     private double radiationRadius  = 0.15; // 0.15
-    private double joiningRadius    = 2.0; // 2.0
+    private double joiningRadius    = 3.0; // 2.0
     private double maxVelocity      = 0.03; // 0.03
 
 
