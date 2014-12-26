@@ -28,7 +28,7 @@ import java.util.Iterator;
  */
 public class RadiationParticle extends Particle {
 
-    int radiation = sim.getRadiationIntensity();
+    int attached = 0;
 
     final SimpleColorMap map = new SimpleColorMap(
             0,
@@ -58,6 +58,7 @@ public class RadiationParticle extends Particle {
     public void stepUpdateVelocity(){
         if (this.intensity <= 0){
             // Join to others radioactive particles without radiation
+            attached = 0;
             MutableDouble2D displacement = new MutableDouble2D(0.0,0.0);
 
             Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getJoiningRadius());
@@ -68,6 +69,7 @@ public class RadiationParticle extends Particle {
                     if ((particle.id.equals(this.id))
                             || (particle instanceof InsulationParticle)
                             || ((RadiationParticle) particle).intensity > 0) continue;
+                    attached++;
                     if (distance(particle.position, this.position) <= sim.particleWidth) continue;
 
                     Double2D force = calculateDisplacementBy(particle.position, 100.0);

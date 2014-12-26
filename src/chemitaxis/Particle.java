@@ -96,9 +96,10 @@ public abstract class Particle {
         // Force
         double distance = distance(this.position, position);
         double force = (1 / distance)*multiplier;
-        double x = force * (x2 - x1);
-        double y = force * (y2 - y1);
-        return new Double2D(x,y);
+        // Toroidal space
+        double toroidalX = Math.abs(x2 - x1) < sim.space.width - Math.abs(x2 - x1)? force * (x2 - x1):force * (x1 -x2);
+        double toroidalY = Math.abs(y2 - y1) < sim.space.width - Math.abs(y2 - y1)? force * (y2 - y1):force * (y1 -y2);
+        return new Double2D(toroidalX,toroidalY);
     }
 
     protected boolean moveFrom(MutableDouble2D current, double distance){

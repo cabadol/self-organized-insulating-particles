@@ -136,7 +136,8 @@ public class InsulationParticle extends Particle {
         // Maintain a maximum distance to radioactive particle
         double distance = (this.source != null)? distance(this.position, this.source.position) : 0.0 ;
         if ((distance > sim.getRadiationRadius())
-                && ( distance < (sim.getRadiationRadius()+sim.getMaxVelocity()))
+                && (distance > this.source.attached*sim.getRadiationRadius())
+                && ( distance < (this.source.attached*sim.getRadiationRadius()+sim.getMaxVelocity()))
                 && (source.velocity.length() <= 0.0)
                 ){
             // undo movement
@@ -144,7 +145,6 @@ public class InsulationParticle extends Particle {
             // random movement
             this.velocity = randomMovement();
             // evaluate
-            System.out.println("Update position "+ id + ": distance: " + distance);
             stepUpdatePosition();
             return;
         }
@@ -163,7 +163,6 @@ public class InsulationParticle extends Particle {
     private synchronized void attach(RadiationParticle particle){
         int radiation;
         if ((this.intensity > 0) && (radiation = particle.isolate(this.intensity)) > 0 ){
-            System.out.println("Isolating particle: " + particle.id + " from " + this.id);
             this.source = particle;
             this.sourceRadiation = radiation;
             this.intensity = 0;
