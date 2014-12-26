@@ -28,13 +28,12 @@ import java.util.Iterator;
  */
 public class RadiationParticle extends Particle {
 
-    int attached = 0;
+    public enum Mode{
+        RADIATE, BLOCKED;
+    }
 
-    final SimpleColorMap map = new SimpleColorMap(
-            0,
-            sim.getRadiationIntensity()*100,
-            Color.white,
-            Color.red);
+    int attached = 0;
+    Mode mode = Mode.RADIATE;
 
     protected RadiationParticle(ChemitaxisSim sim, String id) {
         super(
@@ -51,13 +50,14 @@ public class RadiationParticle extends Particle {
 
     @Override
     public Color getColor() {
-        return map.getColor(intensity <= 0? 0 : sim.getRadiationIntensity()*100);
+        if (this.mode.equals(Mode.BLOCKED)) return Color.white;
+        return Color.red;
     }
 
 
     @Override
     public void stepUpdateVelocity(){
-        if (this.intensity <= 0){
+        if (mode.equals(Mode.BLOCKED)){
             // Join to others radioactive particles without radiation
             attached = 0;
             MutableDouble2D displacement = new MutableDouble2D(0.0,0.0);
@@ -69,7 +69,7 @@ public class RadiationParticle extends Particle {
                     Particle particle = (Particle) iterator.next();
                     if ((particle.id.equals(this.id))
                             || (particle instanceof InsulationParticle)
-                            || (particle.intensity > 0)) continue;
+                            || ((RadiationParticle)particle).mode.equals(Mode.RADIATE)) continue;
                     attached++;
                     if (distance(particle.position, this.position) <= sim.particleWidth) continue;
 
@@ -119,24 +119,19 @@ public class RadiationParticle extends Particle {
 
     @Override
     public void stepUpdateRadiation() {
-        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
+        this.intensity = sim.getRadiationIntensity();
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius(),true);
         Iterator iterator = neighbors.iterator();
         while(iterator.hasNext()){
             Particle particle = (Particle) iterator.next();
-            if (particle instanceof InsulationParticle){
-                isolate(particle.intensity);
-            }
+            if (particle.id.equals(this.id)) continue;
+            this.intensity -= particle.intensity;
+        }
+        if (this.intensity <= 0){
+            // Change to BLOCKED Mode
+            this.mode = Mode.BLOCKED;
         }
     }
 
-//    public synchronized int isolate(int intensity){
-//        if (this.intensity == 0) return 0;
-//        this.intensity -= intensity;
-//        //return this.intensity+intensity;
-//        return 1;
-//    }
-    public synchronized void isolate(int intensity){
-        this.intensity -= intensity;
-    }
 
 }

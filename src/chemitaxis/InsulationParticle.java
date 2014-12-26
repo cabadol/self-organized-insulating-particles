@@ -29,14 +29,6 @@ import java.util.Iterator;
 public class InsulationParticle extends Particle {
 
     protected RadiationParticle source;
-    protected int sourceRadiation = 0;
-
-
-    final SimpleColorMap map = new SimpleColorMap(
-            0,
-            1,
-            Color.green,
-            Color.blue);
 
     protected InsulationParticle(ChemitaxisSim sim, String id) {
         super(
@@ -52,7 +44,10 @@ public class InsulationParticle extends Particle {
 
     @Override
     public Color getColor() {
-        return map.getColor(intensity);
+        // Attached Mode
+        if (this.source != null) return Color.green;
+        // Exploration Mode
+        return Color.blue;
     }
 
     @Override
@@ -61,7 +56,7 @@ public class InsulationParticle extends Particle {
 
         if (this.source != null){
             // attach mode
-            Double2D force = calculateDisplacementBy(this.source.position, this.sourceRadiation);
+            Double2D force = calculateDisplacementBy(this.source.position, 1);
             displacement.addIn(force);
         }
 
@@ -126,7 +121,7 @@ public class InsulationParticle extends Particle {
             // Avoid collision
             Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
             Double2D backward = new Double2D(-this.velocity.x/10,-this.velocity.y/10);
-            while (neighbours.size() > 0) {
+            while (neighbours.size() > 0){
                 this.position.addIn(backward);
                 if (neighbours.contains(this) && neighbours.size()==1) break;
                 neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
@@ -161,14 +156,15 @@ public class InsulationParticle extends Particle {
     }
 
     private synchronized void attach(RadiationParticle particle){
-        int radiation = 1;
-        if (
-//                ((this.intensity > 0) && (radiation = particle.isolate(this.intensity)) > 0) ||
-                ((this.source == null) && (distance(particle.position, this.position) < sim.getRadiationRadius()))
-                ){
+
+        if ((distance(particle.position, this.position) < sim.getRadiationRadius())){
             this.source = particle;
-            this.sourceRadiation = radiation;
-            this.intensity = 0;
         }
+
+
+//        if (((this.source == null) && (distance(particle.position, this.position) < sim.getRadiationRadius()))){
+//            this.source = particle;
+//            this.intensity = 0;
+//        }
     }
 }
