@@ -61,7 +61,7 @@ public class InsulationParticle extends Particle {
 
         if (this.source != null){
             // attach mode
-            Double2D force = calculateDisplacementBy(this.source.position, this.sourceRadiation*100);
+            Double2D force = calculateDisplacementBy(this.source.position, this.sourceRadiation);
             displacement.addIn(force);
         }
 
@@ -74,12 +74,14 @@ public class InsulationParticle extends Particle {
 
                 if (particle.id.equals(this.id)) continue;
 
-                double multiplier = 1.0;
+                double multiplier = 0.0;
                 if (particle instanceof RadiationParticle){
+                    if ((this.source != null) && (this.source.id.equals(particle.id)))continue;
                     attach((RadiationParticle) particle);
-                    multiplier = this.intensity*particle.intensity*100;
-                } else if (particle instanceof InsulationParticle){
-                    multiplier = -0.5;
+                    multiplier = this.intensity + (particle.intensity*100);
+                }
+                else if ((particle instanceof InsulationParticle) && (this.source != null)){
+                    multiplier = -1.0;
                 }
 
                 Double2D force = calculateDisplacementBy(particle.position, multiplier);
@@ -89,18 +91,13 @@ public class InsulationParticle extends Particle {
         if (displacement.length() == 0) {
             // exploration mode
             MutableDouble2D endpoint = new MutableDouble2D();
-            MutableDouble2D randomMovement = new MutableDouble2D();
+            MutableDouble2D movement = new MutableDouble2D();
             do{
                 endpoint.setTo(this.position);
-                randomMovement.setTo(limitToMaxVelocity(
-                        new MutableDouble2D(
-                                (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
-                                (sim.random.nextDouble() * sim.height) - (sim.height * 0.5)
-                        )
-                ));
-                endpoint.addIn(randomMovement);
-            }while(!moveFrom(endpoint, sim.particleWidth));
-            displacement.addIn(randomMovement);
+                movement.setTo(randomMovement());
+                endpoint.addIn(movement);
+            }while(!moveFrom(endpoint, sim.getMaxVelocity()));
+            displacement.addIn(movement);
 
         }
 
@@ -115,6 +112,8 @@ public class InsulationParticle extends Particle {
     @Override
     public void stepUpdatePosition(){
 
+        MutableDouble2D startingPoint = this.position.dup();
+
         if (velocity.length() > 0 ){
 
             // Move
@@ -124,7 +123,7 @@ public class InsulationParticle extends Particle {
             this.position.x = sim.space.stx(position.x);
             this.position.y = sim.space.sty(position.y);
 
-            // Check neighbours
+            // Avoid collision
             Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
             Double2D backward = new Double2D(-this.velocity.x/10,-this.velocity.y/10);
             while (neighbours.size() > 0) {
@@ -134,22 +133,21 @@ public class InsulationParticle extends Particle {
             }
         }
 
-
-//        // Maintain a maximum distance to radioactive particle
-//        if ((source != null) && ( distance(this.position, this.source.position) > sim.getRadiationRadius())){
-//            double backwardX = this.velocity.x/10;
-//            double backwardY = this.velocity.y/10;
-//
-//            do{
-//                this.velocity.setX(this.velocity.getX()-backwardX);
-//                this.velocity.setY(this.velocity.getY()-backwardY);
-//
-//                super.stepUpdatePosition();
-//
-//            }while(  distance(this.position, this.source.position) > sim.getRadiationRadius());
-//
-//            sim.space.setObjectLocation(this, new Double2D(position));
-//        }
+        // Maintain a maximum distance to radioactive particle
+        double distance = (this.source != null)? distance(this.position, this.source.position) : 0.0 ;
+        if ((distance > sim.getRadiationRadius())
+                && ( distance < (sim.getRadiationRadius()+sim.getMaxVelocity()))
+                && (source.velocity.length() <= 0.0)
+                ){
+            // undo movement
+            this.position = startingPoint;
+            // random movement
+            this.velocity = randomMovement();
+            // evaluate
+            System.out.println("Update position "+ id + ": distance: " + distance);
+            stepUpdatePosition();
+            return;
+        }
 
         sim.space.setObjectLocation(this, new Double2D(position));
         this.lastMovements.add(new Double2D(this.position));
@@ -163,7 +161,7 @@ public class InsulationParticle extends Particle {
     }
 
     private synchronized void attach(RadiationParticle particle){
-        int radiation = 0;
+        int radiation;
         if ((this.intensity > 0) && (radiation = particle.isolate(this.intensity)) > 0 ){
             System.out.println("Isolating particle: " + particle.id + " from " + this.id);
             this.source = particle;

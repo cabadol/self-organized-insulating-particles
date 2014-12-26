@@ -79,6 +79,15 @@ public abstract class Particle {
                                     Math.pow( Math.min( Math.abs(p1.y - p2.y),  sim.space.height - Math.abs(p1.y - p2.y)), 2));
     }
 
+    protected MutableDouble2D randomMovement(){
+        return limitToMaxVelocity(
+                new MutableDouble2D(
+                        (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
+                        (sim.random.nextDouble() * sim.height) - (sim.height * 0.5)
+                )
+        );
+    }
+
     protected Double2D calculateDisplacementBy(MutableDouble2D position, double multiplier){
         double x1 = this.position.x;
         double y1 = this.position.y;
@@ -86,25 +95,9 @@ public abstract class Particle {
         double y2 = position.y;
         // Force
         double distance = distance(this.position, position);
-        double force = (1 / (distance*2))*multiplier; // multiplier times of inverse to distance
-        // Distance
-        double diffX = Math.abs(x2 - x1);
-        double diffY = Math.abs(y2 - y1);
-        // Displacement
-        double x = 0.0;
-        double y = 0.0;
-        // X-Axis
-        if (x2 > x1){
-            x = force * (diffX /diffY);
-        } else if (x2 < x1){
-            x = -(force * (diffX /diffY));
-        }
-        // Y-Axis
-        if (y2 > y1){
-            y = force * (diffY/ diffX);
-        } else if (y2 < y1){
-            y = -(force * (diffY/ diffX));
-        }
+        double force = (1 / distance)*multiplier;
+        double x = force * (x2 - x1);
+        double y = force * (y2 - y1);
         return new Double2D(x,y);
     }
 
