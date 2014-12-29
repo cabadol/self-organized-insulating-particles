@@ -38,14 +38,15 @@ public class InsulationParticle extends Particle {
                 (sim.random.nextDouble() % sim.getMaxVelocity()),
                 sim,
                 id,
-                1
+                -1,  // intensity
+                1   // response rate
         );
     }
 
     @Override
     public Color getColor() {
         // Attached Mode
-        if (this.source != null) return Color.green;
+//        if (this.source != null) return Color.green;
         // Exploration Mode
         return Color.blue;
     }
@@ -55,12 +56,10 @@ public class InsulationParticle extends Particle {
         MutableDouble2D displacement = new MutableDouble2D(0.0,0.0);
 
         if (this.source != null){
-            // attach mode
             Double2D force = calculateDisplacementBy(this.source.position, 1);
             displacement.addIn(force);
         }
 
-        // insulation mode
         Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
         if (neighbors.size() > 1){
             Iterator iterator = neighbors.iterator();
@@ -69,18 +68,19 @@ public class InsulationParticle extends Particle {
 
                 if (particle.id.equals(this.id)) continue;
 
-                double multiplier = 0.0;
+                double force = 0.0;
                 if (particle instanceof RadiationParticle){
                     if ((this.source != null) && (this.source.id.equals(particle.id)))continue;
                     attach((RadiationParticle) particle);
-                    multiplier = this.intensity + (particle.intensity*100);
+//                    force = this.intensity + (particle.intensity*100);
                 }
                 else if ((particle instanceof InsulationParticle) && (this.source != null)){
-                    multiplier = -1.0;
+//                    force = -1.0;
                 }
-
-                Double2D force = calculateDisplacementBy(particle.position, multiplier);
-                displacement.addIn(force);
+                force = this.intensity + particle.intensity;
+//                force *= this.responseRate;
+                Double2D partialDisplacement = calculateDisplacementBy(particle.position, force);
+                displacement.addIn(partialDisplacement);
             }
         }
         if (displacement.length() == 0) {
@@ -97,7 +97,7 @@ public class InsulationParticle extends Particle {
         }
 
 
-        MutableDouble2D partialVelocity = limitToMaxVelocity(displacement);
+        MutableDouble2D partialVelocity = limitToMaxVelocity(displacement, sim.getMaxVelocity()*responseRate);
         this.velocity.addIn(partialVelocity);
     }
 
@@ -160,11 +160,5 @@ public class InsulationParticle extends Particle {
         if ((distance(particle.position, this.position) < sim.getRadiationRadius())){
             this.source = particle;
         }
-
-
-//        if (((this.source == null) && (distance(particle.position, this.position) < sim.getRadiationRadius()))){
-//            this.source = particle;
-//            this.intensity = 0;
-//        }
     }
 }

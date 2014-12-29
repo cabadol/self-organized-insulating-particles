@@ -24,9 +24,9 @@ import sim.field.continuous.Continuous2D;
  */
 public class ChemitaxisSim extends SimState {
 
-    public double width             = 7.0; // 7.0
-    public double height            = 7.0; // 7.0
-    public double particleWidth     = 0.06; // 75% width
+    public double width             = 7.0;      // 7.0
+    public double height            = 7.0;      // 7.0
+    public double particleWidth     = 0.06;     // 0.06
 
     public Continuous2D space;
     public Continuous2D area;
@@ -34,13 +34,13 @@ public class ChemitaxisSim extends SimState {
     private RadiationParticle[] radiationParticles;
     private InsulationParticle[] insulationParticles;
 
-    private int numRadioactiveParticles = 50; //50
-    private int numInsulationParticles  = 500; //500
-    private int radiationIntensity  = 5; // 5
+    private int numRadioactiveParticles = 100;  // 100
+    private int numInsulationParticles  = 700;  // 700
+    private int radiationIntensity  = 4;        // 4
 
-    private double radiationRadius  = 0.15; // 0.15
-    private double joiningRadius    = 3.0; // 2.0
-    private double maxVelocity      = 0.03; // 0.03
+    private double radiationRadius  = 0.15;     // 0.15
+    private double joiningRadius    = 3.5;      // 3.5
+    private double maxVelocity      = 0.03;     // 0.03
 
 
     // Properties

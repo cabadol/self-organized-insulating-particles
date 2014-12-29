@@ -43,14 +43,15 @@ public class RadiationParticle extends Particle {
                 0,
                 sim,
                 id,
-                sim.getRadiationIntensity()
+                sim.getRadiationIntensity(),    // intensity
+                0.15                             // response rate
         );
         sim.area.setObjectLocation(this,new Double2D(position));
     }
 
     @Override
     public Color getColor() {
-        if (this.mode.equals(Mode.BLOCKED)) return Color.white;
+//        if (this.mode.equals(Mode.BLOCKED)) return Color.white;
         return Color.red;
     }
 
@@ -77,7 +78,7 @@ public class RadiationParticle extends Particle {
                     displacement.addIn(force);
                 }
             }
-            MutableDouble2D limitedVelocity = limitToMaxVelocity(displacement);
+            MutableDouble2D limitedVelocity = limitToMaxVelocity(displacement, sim.getMaxVelocity()*responseRate);
             this.velocity.setTo(limitedVelocity);
         }
     }
@@ -125,7 +126,7 @@ public class RadiationParticle extends Particle {
         while(iterator.hasNext()){
             Particle particle = (Particle) iterator.next();
             if (particle.id.equals(this.id)) continue;
-            this.intensity -= particle.intensity;
+            this.intensity -= Math.abs(particle.intensity);
         }
         if (this.intensity <= 0){
             // Change to BLOCKED Mode

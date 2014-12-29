@@ -33,14 +33,16 @@ public abstract class Particle {
     protected ChemitaxisSim sim;
     protected String id;
     protected int intensity;
+    protected double responseRate;
 
-    protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, String id, int intensity) {
+    protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, String id, int intensity, double responseRate) {
         this.id = id;
         this.sim = sim;
         this.position.setTo(x, y);
         this.velocity.setTo(vx, vy);
         this.intensity = intensity;
         this.lastMovements = new CircularFifoQueue(3);
+        this.responseRate = responseRate;
         sim.space.setObjectLocation(this,new Double2D(position));
     }
 
@@ -52,9 +54,9 @@ public abstract class Particle {
 
     public abstract void stepUpdatePosition();
 
-    protected MutableDouble2D limitToMaxVelocity(MutableDouble2D displacement){
-        if ((Math.abs(displacement.getY()) < sim.getMaxVelocity())
-                && (Math.abs(displacement.getX()) < sim.getMaxVelocity())) return displacement;
+    protected MutableDouble2D limitToMaxVelocity(MutableDouble2D displacement, double max){
+        if ((Math.abs(displacement.getY()) < max)
+                && (Math.abs(displacement.getX()) < max)) return displacement;
 
         double absX = Math.abs(displacement.x);
         double absY = Math.abs(displacement.y);
@@ -63,12 +65,12 @@ public abstract class Particle {
         double valueY = (displacement.y < 0)? -1 : 1;
 
         if (absY >= absX){
-            valueX *= (absX*sim.getMaxVelocity())/absY;
-            valueY *= sim.getMaxVelocity();
+            valueX *= (absX*max)/absY;
+            valueY *= max;
 
         }else{
-            valueY *= (absY*sim.getMaxVelocity())/absX;
-            valueX *= sim.getMaxVelocity();
+            valueY *= (absY*max)/absX;
+            valueX *= max;
         }
         return new MutableDouble2D(valueX, valueY);
     }
@@ -84,7 +86,7 @@ public abstract class Particle {
                 new MutableDouble2D(
                         (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
                         (sim.random.nextDouble() * sim.height) - (sim.height * 0.5)
-                )
+                ), sim.getMaxVelocity()
         );
     }
 
