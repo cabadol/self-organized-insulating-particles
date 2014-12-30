@@ -92,7 +92,7 @@ public class ChemitaxisSim extends SimState {
         super(seed);
     }
 
-    private Particle initializeParticle(Particle particle){
+    private Particle initializeParticle(final Particle particle){
         schedule.scheduleRepeating(Schedule.EPOCH, 1, new Steppable() {
             public void step(SimState state) {
                 particle.stepUpdateRadiation();
