@@ -36,13 +36,13 @@ public class ChemitaxisSim extends SimState {
 
     private int numRadioactiveParticles = 100;  // 100
     private int numInsulationParticles  = 700;  // 700
-    private int radiationIntensity  = 4;        // 4
+    private int radiationIntensity      = 4;    // 4
 
     private double radiationRadius  = 0.15;     // 0.15
     private double joiningRadius    = 3.5;      // 3.5
     private double maxVelocity      = 0.03;     // 0.03
 
-
+    private int movementHistory     = 3;
     // Properties
 
     public double getJoiningRadius() {
@@ -81,6 +81,12 @@ public class ChemitaxisSim extends SimState {
     public void setRadiationIntensity(int radiationIntensity) {
         this.radiationIntensity = radiationIntensity;
     }
+    public int getMovementHistory() {
+        return movementHistory;
+    }
+    public void setMovementHistory(int movementHistory) {
+        this.movementHistory = movementHistory;
+    }
 
     public ChemitaxisSim(long seed) {
         super(seed);
@@ -112,7 +118,7 @@ public class ChemitaxisSim extends SimState {
     public void start() {
         super.start();
         space = new Continuous2D(0.01, width, height);
-        area  = new Continuous2D(0.04, width, height);
+        area  = new Continuous2D(0.04, width, height); // radioactive particles
 
         radiationParticles = new RadiationParticle[numRadioactiveParticles];
         for (int i = 0; i < numRadioactiveParticles; i++) {

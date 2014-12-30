@@ -33,6 +33,7 @@ public abstract class Particle {
     protected ChemitaxisSim sim;
     protected String id;
     protected int intensity;
+    protected int initialIntensity;
     protected double responseRate;
 
     protected Particle(double x, double y, double vx, double vy, ChemitaxisSim sim, String id, int intensity, double responseRate) {
@@ -41,7 +42,8 @@ public abstract class Particle {
         this.position.setTo(x, y);
         this.velocity.setTo(vx, vy);
         this.intensity = intensity;
-        this.lastMovements = new CircularFifoQueue(3);
+        this.initialIntensity = intensity;
+        this.lastMovements = new CircularFifoQueue(sim.getMovementHistory());
         this.responseRate = responseRate;
         sim.space.setObjectLocation(this,new Double2D(position));
     }
@@ -53,6 +55,10 @@ public abstract class Particle {
     public abstract void stepUpdateVelocity();
 
     public abstract void stepUpdatePosition();
+
+    public int getForce() {
+        return initialIntensity;
+    }
 
     protected MutableDouble2D limitToMaxVelocity(MutableDouble2D displacement, double max){
         if ((Math.abs(displacement.getY()) < max)
@@ -100,7 +106,7 @@ public abstract class Particle {
         double force = (1 / distance)*multiplier;
         // Toroidal space
         double toroidalX = Math.abs(x2 - x1) < sim.space.width - Math.abs(x2 - x1)? force * (x2 - x1):force * (x1 -x2);
-        double toroidalY = Math.abs(y2 - y1) < sim.space.width - Math.abs(y2 - y1)? force * (y2 - y1):force * (y1 -y2);
+        double toroidalY = Math.abs(y2 - y1) < sim.space.height - Math.abs(y2 - y1)? force * (y2 - y1):force * (y1 -y2);
         return new Double2D(toroidalX,toroidalY);
     }
 

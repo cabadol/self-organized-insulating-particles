@@ -18,7 +18,6 @@ package chemitaxis;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
-import sim.util.gui.SimpleColorMap;
 
 import java.awt.*;
 import java.util.Iterator;
@@ -44,7 +43,7 @@ public class RadiationParticle extends Particle {
                 sim,
                 id,
                 sim.getRadiationIntensity(),    // intensity
-                0.15                             // response rate
+                0.15                            // response rate
         );
         sim.area.setObjectLocation(this,new Double2D(position));
     }
@@ -74,7 +73,7 @@ public class RadiationParticle extends Particle {
                     attached++;
                     if (distance(particle.position, this.position) <= sim.particleWidth) continue;
 
-                    Double2D force = calculateDisplacementBy(particle.position, sim.getRadiationIntensity());
+                    Double2D force = calculateDisplacementBy(particle.position, particle.getForce());
                     displacement.addIn(force);
                 }
             }
@@ -103,10 +102,12 @@ public class RadiationParticle extends Particle {
                     Particle particle = (Particle) iterator.next();
                     if (particle.id.equals(this.id)) continue;
                     if ((particle instanceof RadiationParticle)){
+                        // Maybe creation of isolated groups of radioactive particles
                         this.position.setTo(startingPoint);
                         this.velocity.setTo(new Double2D(0.0,0.0));
                         return;
                     }else if (particle instanceof InsulationParticle){
+                        // Generate repulsive force to neighbours
                         particle.velocity.addIn(this.velocity);
                     }
                 }
@@ -120,17 +121,23 @@ public class RadiationParticle extends Particle {
 
     @Override
     public void stepUpdateRadiation() {
-        this.intensity = sim.getRadiationIntensity();
-        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius(),true);
-        Iterator iterator = neighbors.iterator();
-        while(iterator.hasNext()){
-            Particle particle = (Particle) iterator.next();
-            if (particle.id.equals(this.id)) continue;
-            this.intensity -= Math.abs(particle.intensity);
-        }
-        if (this.intensity <= 0){
-            // Change to BLOCKED Mode
-            this.mode = Mode.BLOCKED;
+        if (this.mode.equals(Mode.RADIATE)){
+            // Update radiation based on neighbours
+            this.intensity = sim.getRadiationIntensity();
+            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius(),true);
+            Iterator iterator = neighbors.iterator();
+            while(iterator.hasNext()){
+                Particle particle = (Particle) iterator.next();
+                if (particle.id.equals(this.id)) continue;
+                if (particle instanceof InsulationParticle){
+                    InsulationParticle insulating = (InsulationParticle) particle;
+                    this.intensity -= ((insulating.source != null) && (insulating.source.id.equals(this.id)))?  Math.abs(particle.intensity) : 0 ;
+                }
+            }
+            if (this.intensity <= 0){
+                // Change to BLOCKED Mode
+                this.mode = Mode.BLOCKED;
+            }
         }
     }
 

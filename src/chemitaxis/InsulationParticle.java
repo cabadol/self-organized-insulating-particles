@@ -18,7 +18,6 @@ package chemitaxis;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
-import sim.util.gui.SimpleColorMap;
 
 import java.awt.*;
 import java.util.Iterator;
@@ -55,6 +54,7 @@ public class InsulationParticle extends Particle {
     public void stepUpdateVelocity(){
         MutableDouble2D displacement = new MutableDouble2D(0.0,0.0);
 
+        // Attached Force
         if (this.source != null){
             Double2D force = calculateDisplacementBy(this.source.position, 1);
             displacement.addIn(force);
@@ -68,23 +68,16 @@ public class InsulationParticle extends Particle {
 
                 if (particle.id.equals(this.id)) continue;
 
-                double force = 0.0;
                 if (particle instanceof RadiationParticle){
-                    if ((this.source != null) && (this.source.id.equals(particle.id)))continue;
                     attach((RadiationParticle) particle);
-//                    force = this.intensity + (particle.intensity*100);
                 }
-                else if ((particle instanceof InsulationParticle) && (this.source != null)){
-//                    force = -1.0;
-                }
-                force = this.intensity + particle.intensity;
-//                force *= this.responseRate;
+                double force = this.getForce() + particle.getForce();
                 Double2D partialDisplacement = calculateDisplacementBy(particle.position, force);
                 displacement.addIn(partialDisplacement);
             }
         }
         if (displacement.length() == 0) {
-            // exploration mode
+            // random movement
             MutableDouble2D endpoint = new MutableDouble2D();
             MutableDouble2D movement = new MutableDouble2D();
             do{
@@ -118,7 +111,7 @@ public class InsulationParticle extends Particle {
             this.position.x = sim.space.stx(position.x);
             this.position.y = sim.space.sty(position.y);
 
-            // Avoid collision
+            // Avoid collision moving backward
             Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
             Double2D backward = new Double2D(-this.velocity.x/10,-this.velocity.y/10);
             while (neighbours.size() > 0){
@@ -128,7 +121,7 @@ public class InsulationParticle extends Particle {
             }
         }
 
-        // Maintain a maximum distance to radioactive particle
+        // Maintain a maximum distance to radioactive particle:: Gas Particle Model
         double distance = (this.source != null)? distance(this.position, this.source.position) : 0.0 ;
         if ((distance > sim.getRadiationRadius())
                 && (distance > sim.getRadiationRadius()*this.source.attached)
@@ -152,11 +145,11 @@ public class InsulationParticle extends Particle {
 
     @Override
     public void stepUpdateRadiation() {
-
+        // maintain intensity constant
     }
 
     private synchronized void attach(RadiationParticle particle){
-
+        // Attach to radioactive particles within the radiation radius
         if ((distance(particle.position, this.position) < sim.getRadiationRadius())){
             this.source = particle;
         }
