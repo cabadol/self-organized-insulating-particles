@@ -68,6 +68,8 @@ public class InsulationParticle extends Particle {
 
                 if (particle.id.equals(this.id)) continue;
 
+                if ((this.source != null) && (this.source.id.equals(particle.id))) continue;
+
                 if (particle instanceof RadiationParticle){
                     attach((RadiationParticle) particle);
                 }
