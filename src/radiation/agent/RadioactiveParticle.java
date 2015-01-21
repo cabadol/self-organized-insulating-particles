@@ -13,8 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package chemitaxis;
+package radiation.agent;
 
+import radiation.ChemitaxisSim;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
@@ -25,7 +26,7 @@ import java.util.Iterator;
 /**
  * Created by cbadenes on 05/12/14.
  */
-public class RadiationParticle extends Particle {
+public class RadioActiveParticle extends Particle {
 
     public enum Mode{
         RADIATE, BLOCKED;
@@ -34,7 +35,7 @@ public class RadiationParticle extends Particle {
     int attached = 0;
     Mode mode = Mode.RADIATE;
 
-    protected RadiationParticle(ChemitaxisSim sim, String id) {
+    public RadioActiveParticle(ChemitaxisSim sim, String id) {
         super(
                 sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
                 sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
@@ -43,7 +44,7 @@ public class RadiationParticle extends Particle {
                 sim,
                 id,
                 sim.getRadiationIntensity(),    // intensity
-                0.15                            // response rate
+                0.15                            // lambda response rate
         );
         sim.area.setObjectLocation(this,new Double2D(position));
     }
@@ -68,10 +69,10 @@ public class RadiationParticle extends Particle {
                 while(iterator.hasNext()){
                     Particle particle = (Particle) iterator.next();
                     if ((particle.id.equals(this.id))
-                            || (particle instanceof InsulationParticle)
-                            || ((RadiationParticle)particle).mode.equals(Mode.RADIATE)) continue;
+                            || (particle instanceof RadioControlParticle)
+                            || ((RadioActiveParticle)particle).mode.equals(Mode.RADIATE)) continue;
                     attached++;
-                    if (distance(particle.position, this.position) <= sim.particleWidth) continue;
+                    if (distance(particle.position, this.position) <= sim.agentRadius) continue;
 
                     Double2D force = calculateDisplacementBy(particle.position, particle.getForce());
                     displacement.addIn(force);
@@ -95,18 +96,18 @@ public class RadiationParticle extends Particle {
             this.position.y = sim.space.sty(position.y);
 
             // Check neighbours
-            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.agentRadius, true);
             if ((neighbours.size() > 0)) {
                 Iterator iterator = neighbours.iterator();
                 while(iterator.hasNext()){
                     Particle particle = (Particle) iterator.next();
                     if (particle.id.equals(this.id)) continue;
-                    if ((particle instanceof RadiationParticle)){
+                    if ((particle instanceof RadioActiveParticle)){
                         // Maybe creation of isolated groups of radioactive particles
                         this.position.setTo(startingPoint);
                         this.velocity.setTo(new Double2D(0.0,0.0));
                         return;
-                    }else if (particle instanceof InsulationParticle){
+                    }else if (particle instanceof RadioControlParticle){
                         // Generate repulsive force to neighbours
                         particle.velocity.addIn(this.velocity);
                     }
@@ -124,13 +125,13 @@ public class RadiationParticle extends Particle {
         if (this.mode.equals(Mode.RADIATE)){
             // Update radiation based on neighbours
             this.intensity = sim.getRadiationIntensity();
-            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius(),true);
+            Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.radiationRadius,true);
             Iterator iterator = neighbors.iterator();
             while(iterator.hasNext()){
                 Particle particle = (Particle) iterator.next();
                 if (particle.id.equals(this.id)) continue;
-                if (particle instanceof InsulationParticle){
-                    InsulationParticle insulating = (InsulationParticle) particle;
+                if (particle instanceof RadioControlParticle){
+                    RadioControlParticle insulating = (RadioControlParticle) particle;
                     this.intensity -= ((insulating.source != null) && (insulating.source.id.equals(this.id)))?  Math.abs(particle.intensity) : 0 ;
                 }
             }

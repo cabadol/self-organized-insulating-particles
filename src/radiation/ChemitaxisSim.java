@@ -12,8 +12,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package chemitaxis;
+package radiation;
 
+import radiation.agent.RadioControlParticle;
+import radiation.agent.Particle;
+import radiation.agent.RadioActiveParticle;
 import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -26,36 +29,31 @@ public class ChemitaxisSim extends SimState {
 
     public double width             = 7.0;      // 7.0
     public double height            = 7.0;      // 7.0
-    public double particleWidth     = 0.06;     // 0.06
+    public double agentRadius       = 0.06;     // 0.06
 
     public Continuous2D space;
     public Continuous2D area;
 
-    private RadiationParticle[] radiationParticles;
-    private InsulationParticle[] insulationParticles;
+    private RadioActiveParticle[] radioActiveParticles;
+    private RadioControlParticle[] radioControlParticles;
 
     private int numRadioactiveParticles = 100;  // 100
     private int numInsulationParticles  = 700;  // 700
-    private int radiationIntensity      = 4;    // 4
 
-    private double radiationRadius  = 0.15;     // 0.15
-    private double joiningRadius    = 3.5;      // 3.5
+    private int radiationIntensity      = 4;    // 4
+    public double radiationRadius      = getRadiationIntensity() * (agentRadius/2); // 0.15
+
+    private double joiningRadius    = width/2;  // 3.5
     private double maxVelocity      = 0.06;     // 0.06
 
     private int movementHistory     = 3;
-    // Properties
 
+    // Properties
     public double getJoiningRadius() {
         return joiningRadius;
     }
     public void setJoiningRadius(double joiningRadius) {
         this.joiningRadius = joiningRadius;
-    }
-    public double getRadiationRadius() {
-        return radiationRadius;
-    }
-    public void setRadiationRadius(double radiationRadius) {
-        this.radiationRadius = radiationRadius;
     }
     public double getMaxVelocity() {
         return maxVelocity;
@@ -80,6 +78,7 @@ public class ChemitaxisSim extends SimState {
     }
     public void setRadiationIntensity(int radiationIntensity) {
         this.radiationIntensity = radiationIntensity;
+        this.radiationRadius      = this.radiationIntensity * (this.agentRadius/2);
     }
     public int getMovementHistory() {
         return movementHistory;
@@ -120,14 +119,14 @@ public class ChemitaxisSim extends SimState {
         space = new Continuous2D(0.01, width, height);
         area  = new Continuous2D(0.04, width, height); // radioactive particles
 
-        radiationParticles = new RadiationParticle[numRadioactiveParticles];
+        radioActiveParticles = new RadioActiveParticle[numRadioactiveParticles];
         for (int i = 0; i < numRadioactiveParticles; i++) {
-            radiationParticles[i] = (RadiationParticle) initializeParticle(new RadiationParticle(this, "r-"+i));
+            radioActiveParticles[i] = (RadioActiveParticle) initializeParticle(new RadioActiveParticle(this, "r-"+i));
         }
 
-        insulationParticles = new InsulationParticle[numInsulationParticles];
+        radioControlParticles = new RadioControlParticle[numInsulationParticles];
         for (int i = 0; i < numInsulationParticles; i++) {
-            insulationParticles[i] = (InsulationParticle) initializeParticle(new InsulationParticle(this, "i-"+i));
+            radioControlParticles[i] = (RadioControlParticle) initializeParticle(new RadioControlParticle(this, "i-"+i));
         }
     }
 

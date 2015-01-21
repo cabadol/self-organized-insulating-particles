@@ -13,8 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package chemitaxis;
+package radiation.agent;
 
+import radiation.ChemitaxisSim;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;

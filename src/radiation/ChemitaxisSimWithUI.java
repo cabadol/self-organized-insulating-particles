@@ -13,8 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package chemitaxis;
+package radiation;
 
+import radiation.agent.Particle;
 import sim.display.Controller;
 import sim.display.Display2D;
 import sim.display.GUIState;
@@ -95,7 +96,7 @@ public class ChemitaxisSimWithUI extends GUIState {
                 final Particle p = (Particle) o;
                 swarmPortrayal.setPortrayalForObject(
                         p,
-                        new OvalPortrayal2D(Color.green, sim.particleWidth) {
+                        new OvalPortrayal2D(Color.green, sim.agentRadius) {
                             public void draw(Object object, Graphics2D graphics,DrawInfo2D info) {
                                 paint = p.getColor();
                                 super.draw(object, graphics, info);

@@ -13,8 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package chemitaxis;
+package radiation.agent;
 
+import radiation.ChemitaxisSim;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
@@ -25,11 +26,11 @@ import java.util.Iterator;
 /**
  * Created by cbadenes on 12/12/14.
  */
-public class InsulationParticle extends Particle {
+public class RadioControlParticle extends Particle {
 
-    protected RadiationParticle source;
+    protected RadioActiveParticle source;
 
-    protected InsulationParticle(ChemitaxisSim sim, String id) {
+    public RadioControlParticle(ChemitaxisSim sim, String id) {
         super(
                 sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
                 sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
@@ -38,7 +39,7 @@ public class InsulationParticle extends Particle {
                 sim,
                 id,
                 -1,  // intensity
-                1   // response rate
+                1.0   // lambda response rate
         );
     }
 
@@ -60,7 +61,7 @@ public class InsulationParticle extends Particle {
             displacement.addIn(force);
         }
 
-        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.getRadiationRadius());
+        Bag neighbors = sim.space.getNeighborsExactlyWithinDistance(new Double2D(position), sim.radiationRadius);
         if (neighbors.size() > 1){
             Iterator iterator = neighbors.iterator();
             while(iterator.hasNext()){
@@ -70,8 +71,8 @@ public class InsulationParticle extends Particle {
 
                 if ((this.source != null) && (this.source.id.equals(particle.id))) continue;
 
-                if (particle instanceof RadiationParticle){
-                    attach((RadiationParticle) particle);
+                if (particle instanceof RadioActiveParticle){
+                    attach((RadioActiveParticle) particle);
                 }
                 double force = this.getForce() + particle.getForce();
                 Double2D partialDisplacement = calculateDisplacementBy(particle.position, force);
@@ -114,20 +115,20 @@ public class InsulationParticle extends Particle {
             this.position.y = sim.space.sty(position.y);
 
             // Avoid collision moving backward
-            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+            Bag neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.agentRadius, true);
             Double2D backward = new Double2D(-this.velocity.x/10,-this.velocity.y/10);
             while (neighbours.size() > 0){
                 this.position.addIn(backward);
                 if (neighbours.contains(this) && neighbours.size()==1) break;
-                neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.particleWidth, true);
+                neighbours = sim.space.getNeighborsExactlyWithinDistance(new Double2D(this.position), sim.agentRadius, true);
             }
         }
 
         // Maintain a maximum distance to radioactive particle:: Gas Particle Model
         double distance = (this.source != null)? distance(this.position, this.source.position) : 0.0 ;
-        if ((distance > sim.getRadiationRadius())
-                && (distance > sim.getRadiationRadius()*this.source.attached)
-                && (distance < (this.source.attached*sim.getRadiationRadius()+sim.getMaxVelocity()))
+        if ((distance > sim.radiationRadius)
+                && (distance > sim.radiationRadius*this.source.attached)
+                && (distance < (this.source.attached*sim.radiationRadius+sim.getMaxVelocity()))
                 && (source.velocity.length() <= 0.0)
                 ){
             // undo movement
@@ -150,9 +151,9 @@ public class InsulationParticle extends Particle {
         // maintain intensity constant
     }
 
-    private synchronized void attach(RadiationParticle particle){
+    private synchronized void attach(RadioActiveParticle particle){
         // Attach to radioactive particles within the radiation radius
-        if ((distance(particle.position, this.position) < sim.getRadiationRadius())){
+        if ((distance(particle.position, this.position) < sim.radiationRadius)){
             this.source = particle;
         }
     }
